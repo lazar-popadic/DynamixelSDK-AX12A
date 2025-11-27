@@ -16,6 +16,7 @@ find_package(ament_cmake_python REQUIRED)
 find_package(dynamixel_sdk REQUIRED)
 find_package(dynamixel_sdk_custom_interfaces REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(rclcpp_action REQUIRED)
 find_package(rclpy REQUIRED)
 
 include_directories(include)
@@ -28,9 +29,13 @@ target_link_libraries(read_write_node PUBLIC
   rclcpp::rclcpp
 )
 
+add_executable(ax12a_node src/ax12a_rw.cpp)
+ament_target_dependencies(ax12a_node rclcpp rclcpp_action dynamixel_sdk dynamixel_sdk_custom_interfaces)
+
 # Install
 install(TARGETS
   read_write_node
+  ax12a_node
   DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -23,9 +23,14 @@ set(srv_files
   "srv/GetPosition.srv"
 )
 
+set(action_files
+  "action/AxMove.action"
+)
+
 rosidl_generate_interfaces(${PROJECT_NAME}
   ${msg_files}
   ${srv_files}
+  ${action_files}
   DEPENDENCIES builtin_interfaces
 )
 
