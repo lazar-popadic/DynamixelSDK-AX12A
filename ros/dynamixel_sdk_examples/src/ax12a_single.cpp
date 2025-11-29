@@ -32,7 +32,7 @@ using GoalHandleAxMove = rclcpp_action::ServerGoalHandle<AxMove>;
 class AX12ANode : public rclcpp::Node
 {
   public:
-    AX12ANode() : Node("ax12a")
+    AX12ANode() : Node("ax12a_single")
     {
         set_position_subscriber_ = this->create_subscription<SetPosition>(
             "set_position", 10, std::bind(&AX12ANode::callback_set_position, this, _1));
@@ -50,16 +50,16 @@ class AX12ANode : public rclcpp::Node
         // Open Serial Port
         dxl_comm_result_ = portHandler_->openPort();
         if (dxl_comm_result_ == false)
-            RCLCPP_ERROR(rclcpp::get_logger("read_write_node"), "Failed to open the port!");
+            RCLCPP_ERROR(rclcpp::get_logger("ax12a_single_node"), "Failed to open the port!");
         else
-            RCLCPP_INFO(rclcpp::get_logger("read_write_node"), "Succeeded to open the port.");
+            RCLCPP_INFO(rclcpp::get_logger("ax12a_single_node"), "Succeeded to open the port.");
 
         // Set the baudrate of the serial port (use DYNAMIXEL Baudrate)
         dxl_comm_result_ = portHandler_->setBaudRate(BAUDRATE);
         if (dxl_comm_result_ == false)
-            RCLCPP_ERROR(rclcpp::get_logger("read_write_node"), "Failed to set the baudrate!");
+            RCLCPP_ERROR(rclcpp::get_logger("ax12a_single_node"), "Failed to set the baudrate!");
         else
-            RCLCPP_INFO(rclcpp::get_logger("read_write_node"), "Succeeded to set the baudrate.");
+            RCLCPP_INFO(rclcpp::get_logger("ax12a_single_node"), "Succeeded to set the baudrate.");
 
         setupDynamixel(BROADCAST_ID);
 
@@ -105,7 +105,7 @@ class AX12ANode : public rclcpp::Node
         auto feedback = std::make_shared<AxMove::Feedback>();
         auto result = std::make_shared<AxMove::Result>();
 
-        RCLCPP_INFO(this->get_logger(), "Moving AX-12A: /nID: [%d], to position: [%d], with velocity: [%d]", goal->id,
+        RCLCPP_INFO(this->get_logger(), "Moving AX-12A: \nID: [%d], to position: [%d], with velocity: [%d]", goal->id,
                     goal->position, goal->velocity);
 
         int8_t status = 0;
@@ -213,11 +213,11 @@ class AX12ANode : public rclcpp::Node
 
         if (dxl_comm_result_ != COMM_SUCCESS)
         {
-            RCLCPP_ERROR(rclcpp::get_logger("read_write_node"), "Failed to enable torque.");
+            RCLCPP_ERROR(rclcpp::get_logger("ax12a_single_node"), "Failed to enable torque.");
         }
         else
         {
-            RCLCPP_INFO(rclcpp::get_logger("read_write_node"), "Succeeded to enable torque.");
+            RCLCPP_INFO(rclcpp::get_logger("ax12a_single_node"), "Succeeded to enable torque.");
         }
     }
 };

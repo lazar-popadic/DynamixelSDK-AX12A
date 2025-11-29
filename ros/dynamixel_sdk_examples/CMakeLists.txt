@@ -29,13 +29,13 @@ target_link_libraries(read_write_node PUBLIC
   rclcpp::rclcpp
 )
 
-add_executable(ax12a_node src/ax12a_rw.cpp)
-ament_target_dependencies(ax12a_node rclcpp rclcpp_action dynamixel_sdk dynamixel_sdk_custom_interfaces)
+add_executable(ax12a_single src/ax12a_single.cpp)
+ament_target_dependencies(ax12a_single rclcpp rclcpp_action dynamixel_sdk dynamixel_sdk_custom_interfaces)
 
 # Install
 install(TARGETS
   read_write_node
-  ax12a_node
+  ax12a_single
   DESTINATION lib/${PROJECT_NAME}
 )
 
