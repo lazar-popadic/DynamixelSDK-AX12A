@@ -7,4 +7,4 @@ int8 status
 ---
 uint16 current_position
 uint16 position_error
-uint16 current_load
+uint16 current_velocity

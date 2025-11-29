@@ -15,7 +15,7 @@
 #define ADDR_GOAL_POSITION 30
 #define ADDR_MOVING_VELOCITY 32
 #define ADDR_PRESENT_POSITION 36
-#define ADDR_PRESENT_LOAD 40
+#define ADDR_PRESENT_VELOCITY 38
 
 #define PROTOCOL_VERSION 1.0
 
@@ -110,13 +110,14 @@ class AX12ANode : public rclcpp::Node
 
         int8_t status = 0;
         uint8_t dxl_error_ = 0;
-        uint32_t position_velocity = ((uint32_t)(goal->velocity << 16) | (uint32_t)(goal->position));
+        uint32_t position_velocity_ref = ((uint32_t)(goal->velocity << 16) | (uint32_t)(goal->position));
+        uint32_t present_pos_vel = 0;
         uint16_t present_position = 0xffff;
-        uint16_t present_load = 0xffff;
+        uint16_t present_velocity = 0xffff;
         uint16_t position_error = 0xffff;
 
         dxl_comm_result_ = packetHandler_->write4ByteTxRx(portHandler_, (uint8_t)goal->id, ADDR_GOAL_POSITION,
-                                                          position_velocity, &dxl_error_);
+                                                          position_velocity_ref, &dxl_error_);
         if (dxl_comm_result_ != COMM_SUCCESS)
         {
             RCLCPP_INFO(this->get_logger(), "%s", packetHandler_->getTxRxResult(dxl_comm_result_));
@@ -134,22 +135,16 @@ class AX12ANode : public rclcpp::Node
         {
             if (goal_handle->is_canceling())
                 status = -2;
-            /*  TODO:
-             *  - read position
-             *  - read load
-             */
 
-            dxl_comm_result_ =
-                packetHandler_->read2ByteTxRx(portHandler_, (uint8_t)goal->id, ADDR_PRESENT_POSITION,
-                                              reinterpret_cast<uint16_t *>(&present_position), &dxl_error_);
-            dxl_comm_result_ = packetHandler_->read2ByteTxRx(portHandler_, (uint8_t)goal->id, ADDR_PRESENT_LOAD,
-                                                             reinterpret_cast<uint16_t *>(&present_load), &dxl_error_);
-            present_load &= 0b0000001111111111; // dont care about direction, just absolute value, it's very inacurate!!!!!!!!!!!!!!!!
+            dxl_comm_result_ = packetHandler_->read4ByteTxRx(portHandler_, (uint8_t)goal->id, ADDR_PRESENT_POSITION,
+                                                             reinterpret_cast<uint32_t *>(&present_pos_vel), &dxl_error_);
+            present_position = (uint16_t) present_pos_vel;
+            present_velocity = (uint16_t)(present_pos_vel >> 16) & 0b0000001111111111;
             position_error = present_position > goal->position ? present_position - goal->position
                                                                : goal->position - present_position;
             feedback->current_position = present_position;
             feedback->position_error = position_error;
-            feedback->current_load = present_load;
+            feedback->current_velocity = present_velocity;
             goal_handle->publish_feedback(feedback);
 
             if (position_error < goal->position_tolerance)
