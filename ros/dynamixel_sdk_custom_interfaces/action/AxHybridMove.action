@@ -1,0 +1,9 @@
+uint8 id
+uint16 velocity
+float32 zero_time
+int16 delta_pos
+---
+int8 status
+---
+uint16 current_position
+uint16 current_velocity
