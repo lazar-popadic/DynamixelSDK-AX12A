@@ -160,6 +160,12 @@ class Ax12aSingleHybridNode : public rclcpp::Node
             loop_rate.sleep();
         }
 
+        dxl_comm_result = packetHandler_->read2ByteTxRx(portHandler_, (uint8_t)goal->id, ADDR_PRESENT_POSITION,
+                                                        &present_position, &dxl_error);
+
+        dxl_comm_result = packetHandler_->write2ByteTxRx(portHandler_, (uint8_t)goal->id, ADDR_GOAL_POSITION,
+                                                         present_position, &dxl_error);
+
         result->status = status;
         if (rclcpp::ok())
         {
