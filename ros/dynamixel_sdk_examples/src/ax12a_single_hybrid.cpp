@@ -124,13 +124,8 @@ class Ax12aSingleHybridNode : public rclcpp::Node
             if (goal_handle->is_canceling())
                 status = -2;
 
-            dxl_comm_result = packetHandler_->read4ByteTxRx(portHandler_, (uint8_t)goal->id, ADDR_PRESENT_POSITION,
-                                                            reinterpret_cast<uint32_t *>(&present_pos_vel), &dxl_error);
-            present_position = (uint16_t)present_pos_vel;
-            present_velocity = (uint16_t)(present_pos_vel >> 16) & 0b0000001111111111;
-            feedback->current_position = present_position;
-            feedback->current_velocity = present_velocity;
-            goal_handle->publish_feedback(feedback);
+            dxl_comm_result = packetHandler_->read2ByteTxRx(portHandler_, (uint8_t)goal->id, ADDR_PRESENT_POSITION,
+                                                            &present_position, &dxl_error);
 
             position_ref = (int16_t)present_position + goal->delta_pos;
             position_ref = position_ref > 1023 ? 1023 : position_ref;
@@ -149,6 +144,9 @@ class Ax12aSingleHybridNode : public rclcpp::Node
                 status = -4;
             }
 
+            dxl_comm_result = packetHandler_->read2ByteTxRx(portHandler_, (uint8_t)goal->id, ADDR_PRESENT_VELOCITY,
+                                                            &present_velocity, &dxl_error);
+            present_velocity &= 0b0000001111111111;
             if (present_velocity < EPS_VELOCITY)
                 zero_vel_cnt++;
             else
@@ -157,6 +155,9 @@ class Ax12aSingleHybridNode : public rclcpp::Node
             if (zero_vel_cnt >= cnt_limit)
                 status = -1;
 
+            feedback->current_position = present_position;
+            feedback->current_velocity = present_velocity;
+            goal_handle->publish_feedback(feedback);
             loop_rate.sleep();
         }
 
