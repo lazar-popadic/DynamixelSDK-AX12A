@@ -62,8 +62,6 @@ class Ax12aSingleNode : public rclcpp::Node
         else
             RCLCPP_INFO(rclcpp::get_logger("ax12a_single_node"), "Succeeded to set the baudrate.");
 
-        setupDynamixel(BROADCAST_ID);
-
         RCLCPP_INFO(this->get_logger(), "AX-12A single node running.");
     }
 
@@ -113,7 +111,7 @@ class Ax12aSingleNode : public rclcpp::Node
         uint16_t position_error = 0xffff;
 
         int dxl_comm_result = packetHandler_->write4ByteTxRx(portHandler_, (uint8_t)goal->id, ADDR_GOAL_POSITION,
-                                                          position_velocity_ref, &dxl_error);
+                                                             position_velocity_ref, &dxl_error);
         if (dxl_comm_result != COMM_SUCCESS)
         {
             RCLCPP_INFO(this->get_logger(), "%s", packetHandler_->getTxRxResult(dxl_comm_result));
@@ -132,9 +130,8 @@ class Ax12aSingleNode : public rclcpp::Node
             if (goal_handle->is_canceling())
                 status = -2;
 
-            dxl_comm_result =
-                packetHandler_->read4ByteTxRx(portHandler_, (uint8_t)goal->id, ADDR_PRESENT_POSITION,
-                                              reinterpret_cast<uint32_t *>(&present_pos_vel), &dxl_error);
+            dxl_comm_result = packetHandler_->read4ByteTxRx(portHandler_, (uint8_t)goal->id, ADDR_PRESENT_POSITION,
+                                                            reinterpret_cast<uint32_t *>(&present_pos_vel), &dxl_error);
             present_position = (uint16_t)present_pos_vel;
             present_velocity = (uint16_t)(present_pos_vel >> 16) & 0b0000001111111111;
             position_error = present_position > goal->position ? present_position - goal->position
@@ -176,7 +173,7 @@ class Ax12aSingleNode : public rclcpp::Node
         uint16_t goal_position = (uint16_t)msg->position;
 
         int dxl_comm_result = packetHandler_->write2ByteTxRx(portHandler_, (uint8_t)msg->id, ADDR_GOAL_POSITION,
-                                                          goal_position, &dxl_error);
+                                                             goal_position, &dxl_error);
 
         if (dxl_comm_result != COMM_SUCCESS)
         {
@@ -197,28 +194,13 @@ class Ax12aSingleNode : public rclcpp::Node
     {
         uint16_t present_position = 0;
         uint8_t dxl_error = 0;
-        int dxl_comm_result = packetHandler_->read2ByteTxRx(portHandler_, (uint8_t)request->id, ADDR_PRESENT_POSITION,
-                                                         reinterpret_cast<uint16_t *>(&present_position), &dxl_error);
-        (void) dxl_comm_result;
+        int dxl_comm_result =
+            packetHandler_->read2ByteTxRx(portHandler_, (uint8_t)request->id, ADDR_PRESENT_POSITION,
+                                          reinterpret_cast<uint16_t *>(&present_position), &dxl_error);
+        (void)dxl_comm_result;
         RCLCPP_INFO(this->get_logger(), "Get [ID: %d] [Present Position: %d]", request->id, present_position);
 
         response->position = present_position;
-    }
-
-    void setupDynamixel(uint8_t dxl_id)
-    {
-        uint8_t dxl_error = 0;
-        // Enable Torque of DYNAMIXEL
-        int dxl_comm_result = packetHandler_->write1ByteTxRx(portHandler_, dxl_id, ADDR_TORQUE_ENABLE, 1, &dxl_error);
-
-        if (dxl_comm_result != COMM_SUCCESS)
-        {
-            RCLCPP_ERROR(rclcpp::get_logger("ax12a_single_node"), "Failed to enable torque.");
-        }
-        else
-        {
-            RCLCPP_INFO(rclcpp::get_logger("ax12a_single_node"), "Succeeded to enable torque.");
-        }
     }
 };
 

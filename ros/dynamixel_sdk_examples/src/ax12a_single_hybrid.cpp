@@ -54,8 +54,6 @@ class Ax12aSingleHybridNode : public rclcpp::Node
         else
             RCLCPP_INFO(rclcpp::get_logger("ax12a_single_hybrid_node"), "Succeeded to set the baudrate.");
 
-        setupDynamixel(BROADCAST_ID);
-
         RCLCPP_INFO(this->get_logger(), "AX-12A single hybrid node running.");
     }
 
@@ -101,7 +99,7 @@ class Ax12aSingleHybridNode : public rclcpp::Node
         RCLCPP_INFO(this->get_logger(), "Cnt limit = %d", (int)cnt_limit);
         int8_t status = 0;
         uint8_t dxl_error = 0;
-        uint32_t present_pos_vel = 0;
+        // uint32_t present_pos_vel = 0;
         uint16_t present_position = 0xffff;
         uint16_t present_velocity = 0xffff;
         int16_t position_ref = 0;
@@ -185,22 +183,6 @@ class Ax12aSingleHybridNode : public rclcpp::Node
         }
         else
             result->status = -100;
-    }
-
-    void setupDynamixel(uint8_t dxl_id)
-    {
-        uint8_t dxl_error = 0;
-        // Enable Torque of DYNAMIXEL
-        int dxl_comm_result = packetHandler_->write1ByteTxRx(portHandler_, dxl_id, ADDR_TORQUE_ENABLE, 1, &dxl_error);
-
-        if (dxl_comm_result != COMM_SUCCESS)
-        {
-            RCLCPP_ERROR(rclcpp::get_logger("ax12a_single_hybrid_node"), "Failed to enable torque.");
-        }
-        else
-        {
-            RCLCPP_INFO(rclcpp::get_logger("ax12a_single_hybrid_node"), "Succeeded to enable torque.");
-        }
     }
 };
 

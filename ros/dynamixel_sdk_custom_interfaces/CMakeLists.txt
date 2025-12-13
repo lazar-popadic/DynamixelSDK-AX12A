@@ -26,6 +26,7 @@ set(srv_files
 set(action_files
   "action/AxMove.action"
   "action/AxHybridMove.action"
+  "action/AxBulkMove.action"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}

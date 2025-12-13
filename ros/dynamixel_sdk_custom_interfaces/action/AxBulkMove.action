@@ -1,0 +1,10 @@
+uint8[] id
+uint16[] position
+uint16[] velocity
+uint16[] position_tolerance
+---
+int8 status
+---
+uint16[] current_position
+uint16[] position_error
+uint16[] current_velocity
