@@ -17,6 +17,7 @@ find_package(rosidl_default_generators REQUIRED)
 
 set(msg_files
   "msg/SetPosition.msg"
+  "msg/AxMoveGoal.msg"
 )
 
 set(srv_files
